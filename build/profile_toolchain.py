@@ -6,7 +6,7 @@ import os
 import optparse
 import json
 
-sys.path.append("%s/../../build" % os.path.dirname(os.path.realpath(__file__)))
+sys.path.append(f"{os.path.dirname(os.path.realpath(__file__))}/../../build")
 
 import find_depot_tools
 from vs_toolchain import \
@@ -14,7 +14,7 @@ from vs_toolchain import \
     SetEnvironmentAndGetSDKDir, \
     NormalizePath
 
-sys.path.append("%s/win_toolchain" % find_depot_tools.add_depot_tools_to_path())
+sys.path.append(f"{find_depot_tools.add_depot_tools_to_path()}/win_toolchain")
 
 from get_toolchain_if_necessary import CalculateHash
 
@@ -63,11 +63,10 @@ def windows_profile():
 
 
 def main(options):
-    if sys.platform == 'win32':
-        with open(options.output_json, 'w') as f:
-            json.dump(windows_profile(), f)
-    else:
+    if sys.platform != 'win32':
         raise OSError("Unsupported OS")
+    with open(options.output_json, 'w') as f:
+        json.dump(windows_profile(), f)
 
 
 if __name__ == '__main__':

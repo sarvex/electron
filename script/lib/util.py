@@ -41,7 +41,7 @@ def scoped_cwd(path):
 def download(text, url, path):
   safe_mkdir(os.path.dirname(path))
   with open(path, 'wb') as local_file:
-    print("Downloading %s to %s" % (url, path))
+    print(f"Downloading {url} to {path}")
     web_file = urlopen(url)
     info = web_file.info()
     if hasattr(info, 'getheader'):
@@ -67,7 +67,7 @@ def download(text, url, path):
         print(status, end=' ')
 
     if ci:
-      print("%s done." % (text))
+      print(f"{text} done.")
     else:
       print()
   return path
@@ -91,10 +91,8 @@ def make_zip(zip_file_path, files, dirs):
 
 
 def rm_rf(path):
-  try:
+  with contextlib.suppress(OSError):
     shutil.rmtree(path)
-  except OSError:
-    pass
 
 
 def safe_unlink(path):
@@ -163,10 +161,8 @@ def azput(prefix, key_prefix, files):
   print(output)
 
 def get_out_dir():
-  out_dir = 'Debug'
   override = os.environ.get('ELECTRON_OUT_DIR')
-  if override is not None:
-    out_dir = override
+  out_dir = override if override is not None else 'Debug'
   return os.path.join(SRC_DIR, 'out', out_dir)
 
 # NOTE: This path is not created by gn, it is used as a scratch zone by our

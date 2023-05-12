@@ -7,7 +7,7 @@ import sys
 from urllib.request import Request, urlopen
 
 sys.path.append(
-  os.path.abspath(os.path.dirname(os.path.abspath(__file__)) + "/../.."))
+    os.path.abspath(f"{os.path.dirname(os.path.abspath(__file__))}/../.."))
 
 from lib.util import store_artifact, scoped_cwd, safe_mkdir, get_out_dir, \
   ELECTRON_DIR

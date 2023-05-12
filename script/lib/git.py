@@ -22,9 +22,7 @@ def is_repo_root(path):
     return False
 
   git_folder_path = os.path.join(path, '.git')
-  git_folder_exists = os.path.exists(git_folder_path)
-
-  return git_folder_exists
+  return os.path.exists(git_folder_path)
 
 
 def get_repo_root(path):
@@ -40,10 +38,7 @@ def get_repo_root(path):
   parent_path = os.path.dirname(norm_path)
 
   # Check if we're in the root folder already.
-  if parent_path == norm_path:
-    return None
-
-  return get_repo_root(parent_path)
+  return None if parent_path == norm_path else get_repo_root(parent_path)
 
 
 def am(repo, patch_data, threeway=False, directory=None, exclude=None,
@@ -63,9 +58,9 @@ def am(repo, patch_data, threeway=False, directory=None, exclude=None,
 
   root_args = ['-C', repo]
   if committer_name is not None:
-    root_args += ['-c', 'user.name=' + committer_name]
+    root_args += ['-c', f'user.name={committer_name}']
   if committer_email is not None:
-    root_args += ['-c', 'user.email=' + committer_email]
+    root_args += ['-c', f'user.email={committer_email}']
   root_args += ['-c', 'commit.gpgsign=false']
   command = ['git'] + root_args + ['am'] + args
   proc = subprocess.Popen(
@@ -73,8 +68,7 @@ def am(repo, patch_data, threeway=False, directory=None, exclude=None,
       stdin=subprocess.PIPE)
   proc.communicate(patch_data.encode('utf-8'))
   if proc.returncode != 0:
-    raise RuntimeError("Command {} returned {}".format(command,
-      proc.returncode))
+    raise RuntimeError(f"Command {command} returned {proc.returncode}")
 
 
 def import_patches(repo, **kwargs):
@@ -120,7 +114,7 @@ def guess_base_commit(repo):
   """Guess which commit the patches might be based on"""
   try:
     upstream_head = get_upstream_head(repo)
-    num_commits = get_commit_count(repo, upstream_head + '..')
+    num_commits = get_commit_count(repo, f'{upstream_head}..')
     return [upstream_head, num_commits]
   except subprocess.CalledProcessError:
     args = [
@@ -130,7 +124,7 @@ def guess_base_commit(repo):
       'describe',
       '--tags',
     ]
-    return subprocess.check_output(args).decode('utf-8').rsplit('-', 2)[0:2]
+    return subprocess.check_output(args).decode('utf-8').rsplit('-', 2)[:2]
 
 
 def format_patch(repo, since):
@@ -193,11 +187,11 @@ def munge_subject_to_filename(subject):
 
 def get_file_name(patch):
   """Return the name of the file to which the patch should be written"""
-  file_name = None
-  for line in patch:
-    if line.startswith('Patch-Filename: '):
-      file_name = line[len('Patch-Filename: '):]
-      break
+  file_name = next(
+      (line[len('Patch-Filename: '):]
+       for line in patch if line.startswith('Patch-Filename: ')),
+      None,
+  )
   # If no patch-filename header, munge the subject.
   if not file_name:
     for line in patch:
@@ -220,11 +214,8 @@ def remove_patch_filename(patch):
     next_is_patchfilename = i < len(patch) - 1 and patch[i + 1].startswith(
       'Patch-Filename: '
     )
-    if not force_keep_next_line and (
-      is_patchfilename or (next_is_patchfilename and len(l.rstrip()) == 0)
-    ):
-      pass  # drop this line
-    else:
+    if (force_keep_next_line or not is_patchfilename and
+        (not next_is_patchfilename or len(l.rstrip()) != 0)):
       yield l
     force_keep_next_line = l.startswith('Subject: ')
 
@@ -239,14 +230,12 @@ def to_utf8(patch):
 
 def export_patches(repo, out_dir, patch_range=None, dry_run=False):
   if not os.path.exists(repo):
-    sys.stderr.write(
-      "Skipping patches in {} because it does not exist.\n".format(repo)
-    )
+    sys.stderr.write(f"Skipping patches in {repo} because it does not exist.\n")
     return
   if patch_range is None:
     patch_range, num_patches = guess_base_commit(repo)
-    sys.stderr.write("Exporting {} patches in {} since {}\n".format(
-        num_patches, repo, patch_range[0:7]))
+    sys.stderr.write(
+        f"Exporting {num_patches} patches in {repo} since {patch_range[:7]}\n")
   patch_data = format_patch(repo, patch_range)
   patches = split_patches(patch_data)
 
@@ -267,7 +256,7 @@ def export_patches(repo, out_dir, patch_range=None, dry_run=False):
       formatted_patch = join_patch(patch)
       if formatted_patch != existing_patch:
         bad_patches.append(filename)
-    if len(bad_patches) > 0:
+    if bad_patches:
       sys.stderr.write(
         "Patches in {} not up to date: {} patches need update\n-- {}\n".format(
           out_dir, len(bad_patches), "\n-- ".join(bad_patches)

@@ -26,7 +26,7 @@ def copy_debug_from_binary(binary_path, out_dir, target_cpu, compress):
   execute(cmd)
 
 def get_debug_name(binary_path):
-  return os.path.basename(binary_path) + '.debug'
+  return f'{os.path.basename(binary_path)}.debug'
 
 def main():
   args = parse_args()

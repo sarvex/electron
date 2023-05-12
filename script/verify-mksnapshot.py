@@ -31,12 +31,12 @@ def main():
         print('running: ' + ' '.join(mkargs + [ SNAPSHOT_SOURCE ]))
         subprocess.check_call(mkargs + [ SNAPSHOT_SOURCE ], cwd=app_path)
         print('ok mksnapshot successfully created snapshot_blob.bin.')
-        context_snapshot = 'v8_context_snapshot.bin'
         if platform.system() == 'Darwin':
-          if os.environ.get('TARGET_ARCH') == 'arm64':
-            context_snapshot = 'v8_context_snapshot.arm64.bin'
-          else:
-            context_snapshot = 'v8_context_snapshot.x86_64.bin'
+          context_snapshot = ('v8_context_snapshot.arm64.bin'
+                              if os.environ.get('TARGET_ARCH') == 'arm64' else
+                              'v8_context_snapshot.x86_64.bin')
+        else:
+          context_snapshot = 'v8_context_snapshot.bin'
         context_snapshot_path = os.path.join(app_path, context_snapshot)
         gen_binary = get_binary_path('v8_context_snapshot_generator', \
                                     app_path)
@@ -44,8 +44,9 @@ def main():
                   '--output_file={0}'.format(context_snapshot_path) ]
         print('running: ' + ' '.join(genargs))
         subprocess.check_call(genargs)
-        print('ok v8_context_snapshot_generator successfully created ' \
-              + context_snapshot)
+        print(
+            f'ok v8_context_snapshot_generator successfully created {context_snapshot}'
+        )
         if args.create_snapshot_only:
           return 0
       else:
@@ -97,11 +98,8 @@ def create_app_copy(initial_app_path):
   return app_path
 
 def get_binary_path(binary_name, root_path):
-  if sys.platform == 'win32':
-    binary_path = os.path.join(root_path, '{0}.exe'.format(binary_name))
-  else:
-    binary_path = os.path.join(root_path, binary_name)
-  return binary_path
+  return (os.path.join(root_path, '{0}.exe'.format(binary_name))
+          if sys.platform == 'win32' else os.path.join(root_path, binary_name))
 
 def parse_args():
   parser = argparse.ArgumentParser(description='Test mksnapshot')

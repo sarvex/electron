@@ -15,6 +15,6 @@ args = [cmd, "run",
 try:
     subprocess.check_output(args, stderr=subprocess.STDOUT)
 except subprocess.CalledProcessError as e:
-    error_msg = "NPM script '{}' failed with code '{}':\n".format(sys.argv[2], e.returncode)
+    error_msg = f"NPM script '{sys.argv[2]}' failed with code '{e.returncode}':\n"
     print(error_msg + e.output.decode('utf8'))
     sys.exit(e.returncode)

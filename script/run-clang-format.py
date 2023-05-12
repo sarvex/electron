@@ -42,10 +42,8 @@ def excludes_from_file(ignore_file):
             for line in f:
                 if line.startswith('#'):
                     continue
-                pattern = line.rstrip()
-                if not pattern:
-                    continue
-                excludes.append(pattern)
+                if pattern := line.rstrip():
+                    excludes.append(pattern)
     except EnvironmentError as e:
         if e.errno != errno.ENOENT:
             raise
@@ -87,9 +85,11 @@ def make_diff(diff_file, original, reformatted):
         difflib.unified_diff(
             original,
             reformatted,
-            fromfile='a/{}'.format(diff_file),
-            tofile='b/{}'.format(diff_file),
-            n=3))
+            fromfile=f'a/{diff_file}',
+            tofile=f'b/{diff_file}',
+            n=3,
+        )
+    )
 
 
 class DiffError(Exception):
@@ -107,14 +107,12 @@ class UnexpectedError(Exception):
 
 def run_clang_format_diff_wrapper(args, file_name):
     try:
-        ret = run_clang_format_diff(args, file_name)
-        return ret
+        return run_clang_format_diff(args, file_name)
     except DiffError:
         raise
     except Exception as e:
         # pylint: disable=W0707
-        raise UnexpectedError('{}: {}: {}'.format(
-            file_name, e.__class__.__name__, e), e)
+        raise UnexpectedError(f'{file_name}: {e.__class__.__name__}: {e}', e)
 
 
 def run_clang_format_diff(args, file_name):
@@ -142,16 +140,16 @@ def run_clang_format_diff(args, file_name):
     except OSError as exc:
         # pylint: disable=W0707
         raise DiffError(
-            "Command '{}' failed to start: {}".format(
-                subprocess.list2cmdline(invocation), exc
-            )
+            f"Command '{subprocess.list2cmdline(invocation)}' failed to start: {exc}"
         )
     outs = list(proc.stdout.readlines())
     errs = list(proc.stderr.readlines())
     proc.wait()
     if proc.returncode:
-        raise DiffError("clang-format exited with status {}: '{}'".format(
-            proc.returncode, file_name), errs)
+        raise DiffError(
+            f"clang-format exited with status {proc.returncode}: '{file_name}'",
+            errs,
+        )
     if args.fix:
         return None, errs
     if sys.platform == 'win32':
@@ -202,7 +200,7 @@ def print_trouble(prog, message, use_colors):
     error_text = 'error:'
     if use_colors:
         error_text = bold_red(error_text)
-    print("{}: {} {}".format(prog, error_text, message), file=sys.stderr)
+    print(f"{prog}: {error_text} {message}", file=sys.stderr)
 
 
 def main():
@@ -214,9 +212,9 @@ def main():
         default=get_buildtools_executable('clang-format'))
     parser.add_argument(
         '--extensions',
-        help='comma separated list of file extensions (default: {})'.format(
-            DEFAULT_EXTENSIONS),
-        default=DEFAULT_EXTENSIONS)
+        help=f'comma separated list of file extensions (default: {DEFAULT_EXTENSIONS})',
+        default=DEFAULT_EXTENSIONS,
+    )
     parser.add_argument(
         '--fix',
         help='if specified, reformat files in-place',
@@ -372,11 +370,10 @@ def main():
 
     if not args.fix:
         if patch_file.tell() == 0:
-          patch_file.close()
-          os.unlink(patch_file.name)
+            patch_file.close()
+            os.unlink(patch_file.name)
         else:
-          print("\nTo patch these files, run:\n$ git apply {}\n"
-                .format(patch_file.name))
+            print(f"\nTo patch these files, run:\n$ git apply {patch_file.name}\n")
 
     return retcode
 

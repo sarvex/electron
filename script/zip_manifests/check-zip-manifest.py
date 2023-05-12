@@ -13,11 +13,11 @@ def main(zip_path, manifest_in):
   if added_files:
     print("Files added to bundle:")
     for f in sorted(list(added_files)):
-      print('+' + f)
+      print(f'+{f}')
   if removed_files:
     print("Files removed from bundle:")
     for f in sorted(list(removed_files)):
-      print('-' + f)
+      print(f'-{f}')
 
   return 1 if added_files or removed_files else 0
 
