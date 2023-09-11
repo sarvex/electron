@@ -571,10 +571,10 @@
   resolved "https://registry.yarnpkg.com/@opentelemetry/api/-/api-1.0.4.tgz#a167e46c10d05a07ab299fc518793b0cff8f6924"
   integrity sha512-BuJuXRSJNQ3QoKA6GWWDyuLpOUck+9hAXNMCnrloc1aWVoy6Xq6t9PUV08aBZ4Lutqq2LEHM486bpZqoViScog==
 
-"@primer/octicons@^10.0.0":
-  version "10.0.0"
-  resolved "https://registry.yarnpkg.com/@primer/octicons/-/octicons-10.0.0.tgz#81e94ed32545dfd3472c8625a5b345f3ea4c153d"
-  integrity sha512-iuQubq62zXZjPmaqrsfsCZUqIJgZhmA6W0tKzIKGRbkoLnff4TFFCL87hfIRATZ5qZPM4m8ioT8/bXI7WVa9WQ==
+"@primer/octicons@^19.7.0":
+  version "19.7.0"
+  resolved "https://registry.yarnpkg.com/@primer/octicons/-/octicons-19.7.0.tgz#b6a417101c6db892894c7a206fd14c5ba09d6971"
+  integrity sha512-24lel5MYOTXXdm2VPKAT2JIAJU7rnirVfa/1HGBjTvLdUpk789Lz/QA4o7klYhVdjIJW0rw5nOmU+bWSmfuNwg==
   dependencies:
     object-assign "^4.1.1"
 
